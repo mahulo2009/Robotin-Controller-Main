@@ -1,0 +1,158 @@
+#include <Arduino.h>
+#include <L298NHardwareController.h>
+#include <WheelEncoder.h>
+#include <FourWheelRobot.h>
+
+RobotBase *               robot = 0; 
+
+L298NHardwareController * controller1;
+L298NHardwareController * controller2;
+L298NHardwareController * controller3;
+L298NHardwareController * controller4;
+
+WheelEncoder *            wheel1 = 0;
+WheelEncoder *            wheel2 = 0;
+WheelEncoder *            wheel3 = 0;
+WheelEncoder *            wheel4 = 0;
+
+Encoder *                 encoder_1;
+Encoder *                 encoder_2;
+Encoder *                 encoder_3;
+Encoder *                 encoder_4;
+
+Pid *                     pid1 = 0;
+Pid *                     pid2 = 0;
+Pid *                     pid3 = 0;
+Pid *                     pid4 = 0;
+
+
+double gain = 7.926806804971043;
+
+void setup() {
+  Serial.begin(115200);
+
+
+  robot = 
+        new FourWheelRobot(0.21,
+                                      0.16,
+                                      0.034);
+
+  //PW1 FRONT LEFT-------------------------------------------------
+  controller1 = new L298NHardwareController(gain,
+                                0,
+                                255,
+                                1200,
+                                0.034);
+  encoder_1 = 
+    new Encoder(22,
+                23);
+  wheel1 = new WheelEncoder();
+  pid1 = new Pid();
+
+  pid1->setKp(0.1);
+  pid1->setKd(0.5);
+  pid1->setKi(0.3);
+
+
+  controller1->attachPower(4);
+  controller1->attachDirection(1,2);
+  controller1->attachEncoder(encoder_1);
+  wheel1->attachController(controller1);
+  wheel1->attachPid(pid1);
+  robot->addWheel(wheel1); 
+  
+  //PW1 FRONT LEFT-------------------------------------------------
+
+  //PW3 FRONT RIGHT-------------------------------------------------
+  controller2 = new L298NHardwareController(gain,
+                                0,
+                                255,
+                                1200,
+                                0.034);
+  encoder_2 = 
+    new Encoder(15,
+                14);
+  wheel2 = new WheelEncoder();
+  pid2 = new Pid();
+
+  pid2->setKp(0.1);
+  pid2->setKd(0.5);
+  pid2->setKi(0.4);
+
+
+  controller2->attachPower(9);
+  controller2->attachDirection(5,8);
+  controller2->attachEncoder(encoder_2);
+  wheel2->attachController(controller2);
+  wheel2->attachPid(pid2);
+  robot->addWheel(wheel2); 
+  
+  //PW3 FRONT RIGHT-------------------------------------------------
+
+
+  //PW2 BACK LEFT  -------------------------------------------------
+  controller3 = new L298NHardwareController(gain,
+                                0,
+                                255,
+                                1200,
+                                0.034);
+  encoder_3 = 
+    new Encoder(16,
+                17);
+  wheel3 = new WheelEncoder();
+  pid3 = new Pid();
+
+  pid3->setKp(0.5);
+  pid3->setKd(0.0);
+  pid3->setKi(2.0);
+
+
+  controller3->attachPower(3);
+  controller3->attachDirection(12,11);
+  controller3->attachEncoder(encoder_3);
+  wheel3->attachController(controller3);
+  wheel3->attachPid(pid3);
+  robot->addWheel(wheel3); 
+
+  //PW2 BACK LEFT  -------------------------------------------------
+
+  //PW4 BACK RIGHT
+  controller4 = new L298NHardwareController(gain,
+                                0,
+                                255,
+                                1200,
+                                0.034);
+  encoder_4 = 
+    new Encoder(21,
+                20);
+  wheel4 = new WheelEncoder();
+  pid4 = new Pid();
+
+  pid4->setKp(0.5);
+  pid4->setKd(0.0);
+  pid4->setKi(0.5);
+
+
+  controller4->attachPower(10);
+  controller4->attachDirection(7,6);
+  controller4->attachEncoder(encoder_4);
+  wheel4->attachController(controller4);
+  wheel4->attachPid(pid4);
+  robot->addWheel(wheel4); 
+  
+}
+
+void loop() {
+  robot->move(0.0,0.0);
+  robot->update(1);
+  wheel1->update(1);
+  wheel2->update(1);
+  wheel3->update(1);
+  wheel4->update(1);
+  controller1->update(1);
+  controller2->update(1);
+  controller3->update(1);
+  controller4->update(1);
+
+  delay(1000);
+}

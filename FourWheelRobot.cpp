@@ -36,7 +36,7 @@ void FourWheelRobot::update(double dt) //TODO REMOVE THIS PARAMETER
   if (dtt <= COMMAND_TIMEOUT)
   { 
     double target_velocity_wx = 
-      target_velocity_x_ / (2.0 * wheel_radious_); //angular velocity rad/sec
+      target_velocity_x_ / ( wheel_radious_); //angular velocity rad/sec
     double target_velocity_wtheta = 
       ( target_velocity_theta_ * (wheel_separation_x_ / 2.0 + wheel_separation_y_ / 2.0) ) / ( 2.0 * wheel_radious_ );
 
@@ -44,7 +44,6 @@ void FourWheelRobot::update(double dt) //TODO REMOVE THIS PARAMETER
     velocity_2  = target_velocity_wx + target_velocity_wtheta;
     velocity_3  = target_velocity_wx - target_velocity_wtheta;
     velocity_4  = target_velocity_wx + target_velocity_wtheta;  
-
   }
   
   if (wheels_.size() == 4) 
@@ -71,10 +70,8 @@ void FourWheelRobot::update(double dt) //TODO REMOVE THIS PARAMETER
   Serial.print(velocity_4);
   Serial.print("\n");
 	#endif
-
-
     
-  if (wheels_.size() == 2) 
+  if (wheels_.size() == 4) 
   {
     if (wheels_[0] != 0)
       velocity_1 =  wheels_[0]->getVelocity();  
@@ -99,7 +96,7 @@ void FourWheelRobot::update(double dt) //TODO REMOVE THIS PARAMETER
   Serial.print("\n");
 	#endif
 
-  vx_     = ( velocity_1 + velocity_2 + velocity_3 + velocity_4 )   / 4.;  
+  vx_     = (  wheel_radious_ * ( velocity_1 + velocity_2 + velocity_3 + velocity_4 )  )   / 4.;  
 	vy_     = 0;
   vtheta_ =  ( ( -velocity_1 + velocity_2 - velocity_3 + velocity_4 ) / 4.0 ) /  
               ( (wheel_separation_x_ / 2) + (wheel_separation_y_ / 2) )  ;

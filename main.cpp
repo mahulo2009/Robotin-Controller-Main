@@ -2,6 +2,7 @@
 
 #include <ros.h>  //TODO CORRECT DEPENDENCIES
 #include <Pid.h>
+#include <RosAdapterPid.h>
 #include <WheelEncoder.h>
 #include <Encoder.h>
 #include <RobotBase.h>
@@ -26,10 +27,15 @@ L298NHardwareController * controller2;
 L298NHardwareController * controller3;
 L298NHardwareController * controller4;
 
-WheelBase *               wheel1 = 0;
-WheelBase *               wheel2 = 0;
-WheelBase *               wheel3 = 0;
-WheelBase *               wheel4 = 0;
+WheelEncoder *            wheel1 = 0;
+WheelEncoder *            wheel2 = 0;
+WheelEncoder *            wheel3 = 0;
+WheelEncoder *            wheel4 = 0;
+
+Pid *                     pid1 = 0;
+Pid *                     pid2 = 0;
+Pid *                     pid3 = 0;
+Pid *                     pid4 = 0;
 
 Encoder *                 encoder_1;
 Encoder *                 encoder_2;
@@ -72,9 +78,11 @@ void setup() {
   Serial.begin(115200);
 
   RosAdapterRobot * ros_adapter_robot = new RosAdapterRobot(true);
+  RosAdapterPid *   ros_adapter_pid   = new RosAdapterPid();
 
   ros_controller = new RosController();
   ros_controller->addNode(ros_adapter_robot);
+  ros_controller->addNode(ros_adapter_pid);
   ros_controller->init();
  
   RosConfigFourWheelRobotConfig * ros_config_robot = new RosConfigFourWheelRobotConfig("robotin");
@@ -98,13 +106,19 @@ void setup() {
   encoder_1 = 
     new Encoder(ros_config_motor->wheel_config[0].pin_encoder_1,
                 ros_config_motor->wheel_config[0].pin_encoder_2);
+  pid1 = new Pid();
   wheel1 = new WheelEncoder();
+
+  pid1->setKp(0.5);
+  pid1->setKd(0.0);
+  pid1->setKi(2.0);
 
   controller1->attachPower(ros_config_motor->wheel_config[0].pin_power);
   controller1->attachDirection(ros_config_motor->wheel_config[0].pin_direction_1,
                                 ros_config_motor->wheel_config[0].pin_direction_2);
   controller1->attachEncoder(encoder_1);
   wheel1->attachController(controller1);
+  wheel1->attachPid(pid1);
   robot->addWheel(wheel1); 
 
   //Wheel Front Right------------------------------------------------------------------------
@@ -118,13 +132,19 @@ void setup() {
   encoder_2 = 
     new Encoder(ros_config_motor->wheel_config[1].pin_encoder_1,
                 ros_config_motor->wheel_config[1].pin_encoder_2);
+  pid2 = new Pid();
   wheel2 = new WheelEncoder();                
+
+  pid2->setKp(0.5);
+  pid2->setKd(0.0);
+  pid2->setKi(2.0);
    
   controller2->attachPower(ros_config_motor->wheel_config[1].pin_power);
   controller2->attachDirection(ros_config_motor->wheel_config[1].pin_direction_1,
                                 ros_config_motor->wheel_config[1].pin_direction_2);                                
   controller2->attachEncoder(encoder_2);
   wheel2->attachController(controller2);
+  wheel2->attachPid(pid2);
   robot->addWheel(wheel2); 
   
   //Wheel Back Left------------------------------------------------------------------------  
@@ -137,13 +157,19 @@ void setup() {
   encoder_3 = 
     new Encoder(ros_config_motor->wheel_config[2].pin_encoder_1,
                 ros_config_motor->wheel_config[2].pin_encoder_2);
-  wheel3 = new WheelEncoder();                
+  pid3 = new Pid();
+  wheel3 = new WheelEncoder();      
+
+  pid3->setKp(0.5);
+  pid3->setKd(0.0);
+  pid3->setKi(2.0);    
 
   controller3->attachPower(ros_config_motor->wheel_config[2].pin_power);
   controller3->attachDirection(ros_config_motor->wheel_config[2].pin_direction_1,
                                 ros_config_motor->wheel_config[2].pin_direction_2);
   controller3->attachEncoder(encoder_3);  
   wheel3->attachController(controller3);
+  wheel3->attachPid(pid3);
   robot->addWheel(wheel3); 
 
   //Wheel Back Right------------------------------------------------------------------------
@@ -156,18 +182,25 @@ void setup() {
   encoder_4 = 
     new Encoder(ros_config_motor->wheel_config[3].pin_encoder_1,
                 ros_config_motor->wheel_config[3].pin_encoder_2);
+  pid4 = new Pid();
   wheel4 = new WheelEncoder();
    
+  pid4->setKp(0.5);
+  pid4->setKd(0.0);
+  pid4->setKi(2.0);    
+ 
   controller4->attachPower(ros_config_motor->wheel_config[3].pin_power);
   controller4->attachDirection(ros_config_motor->wheel_config[3].pin_direction_1,
                                 ros_config_motor->wheel_config[3].pin_direction_2);
   controller4->attachEncoder(encoder_4);
   wheel4->attachController(controller4);
+  wheel4->attachPid(pid4);
   robot->addWheel(wheel4); 
 
   //Robot------------------------------------------------------------------------
   ros_adapter_robot->attachRobot(robot);
-
+  ros_adapter_pid->attachRobot(robot);
+  
   createTask();
   initTask(); 
 }

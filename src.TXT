@@ -1,0 +1,87 @@
+#include <Arduino.h>
+#include <L298NHardwareController.h>
+
+L298NHardwareController * controller1;
+
+Encoder *                 encoder_1;
+Encoder *                 encoder_2;
+Encoder *                 encoder_3;
+Encoder *                 encoder_4;
+
+
+void setup() {
+  Serial.begin(115200);
+ 
+
+  //PW1 FRONT LEFT
+  pinMode(4, OUTPUT);
+	pinMode(1, OUTPUT);
+  pinMode(2, OUTPUT);
+
+  analogWrite(4,64);
+  digitalWrite(1,LOW);
+  digitalWrite(2,HIGH);
+
+  encoder_1 = 
+    new Encoder(22,
+                23);
+
+  //PW2 BACK LEFT  
+  pinMode(3, OUTPUT);
+	pinMode(11, OUTPUT);
+  pinMode(12, OUTPUT);
+
+  analogWrite(3,64);
+  digitalWrite(11,HIGH);
+  digitalWrite(12,LOW);
+
+  encoder_2 = 
+    new Encoder(16,
+                17);
+
+  //PW3 FRONT RIGHT
+  pinMode(9, OUTPUT);
+	pinMode(8, OUTPUT);
+  pinMode(5, OUTPUT);
+
+  analogWrite(9,64);
+  digitalWrite(8,HIGH);
+  digitalWrite(5,LOW);
+
+  encoder_3 = 
+    new Encoder(15,
+                14);
+
+  //PW4 BACK RIGHT
+  pinMode(10, OUTPUT);
+	pinMode(6, OUTPUT);
+  pinMode(7, OUTPUT);
+
+  analogWrite(10,64);
+  digitalWrite(6,HIGH);
+  digitalWrite(7,LOW);
+  
+  encoder_4 = 
+    new Encoder(21,
+                20);
+}
+
+void loop() {
+  int32_t enc1 = encoder_1->read();
+  Serial.print("Encoder1 value=");
+  Serial.println(enc1);
+
+  int32_t enc2 = encoder_2->read();
+  Serial.print("Encoder2 value=");
+  Serial.println(enc2);
+
+  int32_t enc3 = encoder_3->read();
+  Serial.print("Encoder3 value=");
+  Serial.println(enc3);
+
+  int32_t enc4 = encoder_4->read();
+  Serial.print("Encoder4 value=");
+  Serial.println(enc4);
+
+  delay(1000);
+}

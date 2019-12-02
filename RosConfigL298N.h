@@ -15,16 +15,16 @@ class RosConfigL298N : public RosConfigBase {
 
   	public:
 
-            RosConfigL298N(String ns);
+        RosConfigL298N(String ns);
 
-            virtual void read(ros::NodeHandle &nh);
+        virtual void read(ros::NodeHandle &nh);
 
-            float   gain;
-            int     power_min;  
-            int     power_max;
-            int     ticks_per_revolution;   //TODO ENCODER NOTHING TO DO WITH L298N
+        float   gain;
+        int     power_min;  
+        int     power_max;
+        int     ticks_per_revolution;   //TODO ENCODER NOTHING TO DO WITH L298N
 
-            wheel_config_dual_t wheel_config[4];
+        wheel_config_dual_t wheel_config[4];
             
 	protected:
 

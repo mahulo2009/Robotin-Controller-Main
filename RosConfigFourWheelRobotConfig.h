@@ -15,6 +15,10 @@ class RosConfigFourWheelRobotConfig : public RosConfigBase {
             float robot_wheel_separation_y;
             float robot_wheel_radious;
 
+            float pid_p;
+            float pid_d;
+            float pid_i;
+
 	protected:
 
   	private:   

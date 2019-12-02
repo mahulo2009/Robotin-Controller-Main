@@ -13,6 +13,7 @@ void FourWheelRobot::move(double velocity_x, double velocity_theta)
 {
   target_velocity_x_ = velocity_x;
   target_velocity_theta_ = velocity_theta;
+  previous_command_time_ = millis();
 }
 
 void FourWheelRobot::stop()
@@ -31,8 +32,7 @@ void FourWheelRobot::update(double dt) //TODO REMOVE THIS PARAMETER
   double velocity_4  = 0;
 
   double dtt = millis() - previous_command_time_;
-  previous_command_time_ = millis();
-
+  
   if (dtt <= COMMAND_TIMEOUT)
   { 
     double target_velocity_wx = 

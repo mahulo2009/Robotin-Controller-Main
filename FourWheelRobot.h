@@ -1,8 +1,6 @@
 #ifndef FOUR_WHEEL_ROBOT
 #define FOUR_WHEEL_ROBOT
 
-#define FOUR_WHEEL_ROBOT_DEBUG 1
-
 #include "Arduino.h"
 #include "RobotBase.h"
 

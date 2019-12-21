@@ -2,7 +2,10 @@
 
 #include <ros.h>  //TODO CORRECT DEPENDENCIES
 #include <Pid.h>
+#include <ImuBase.h>
+#include <Imu.h>
 #include <RosAdapterPid.h>
+#include <RosAdapterImu.h>
 #include <WheelEncoder.h>
 #include <Encoder.h>
 #include <RobotBase.h>
@@ -14,13 +17,12 @@
 #include <RosConfigL298N.h>
 #include <TaskScheduler.h>
 
-#define ROS_PUB_TASK_MS 250
-#define KINEMATIC_TASK_MS 50
-#define CLOSE_LOOP_TASK_MS 20
+#define ROS_PUB_TASK_MS     0.05  //20hz
+#define CLOSE_LOOP_TASK_MS  0.05  //20hz
 
 RosController *           ros_controller = 0;
-
-RobotBase *               robot = 0; 
+RobotBase *               robot = 0;
+ImuBase *                 imu = 0; 
 
 L298NHardwareController * controller1;
 L298NHardwareController * controller2;
@@ -46,9 +48,8 @@ void robot_ros_publish_callback();
 void robot_kinematic_callback();
 void robot_close_loop_callback();
 
-Task robot_ros_publish_task(ROS_PUB_TASK_MS, TASK_FOREVER, &robot_ros_publish_callback);
-Task robot_kinematic_task(KINEMATIC_TASK_MS, TASK_FOREVER, &robot_kinematic_callback);
-Task robot_close_loop_task(CLOSE_LOOP_TASK_MS, TASK_FOREVER, &robot_close_loop_callback);
+Task robot_ros_publish_task(ROS_PUB_TASK_MS*1000, TASK_FOREVER, &robot_ros_publish_callback);
+Task robot_close_loop_task(CLOSE_LOOP_TASK_MS*1000, TASK_FOREVER, &robot_close_loop_callback);
 
 Scheduler runner;
 
@@ -59,8 +60,6 @@ void createTask() {
   runner.addTask(robot_close_loop_task);
   Serial.println("robot_close_loop_task task created");
 
-  runner.addTask(robot_kinematic_task);
-  Serial.println("robot_kinematic_task task created");
 }
 
 void initTask() {
@@ -68,39 +67,43 @@ void initTask() {
  	robot_ros_publish_task.enable();
 
   Serial.println("robot_close_loop_task task enabled");
-  robot_close_loop_task.enable();
-
-  Serial.println("robot_kinematic_task task enabled"); 	
-  robot_kinematic_task.enable();
+  robot_close_loop_task.enable();  
 }
 
 void setup() {
+
   Serial.begin(115200);
 
-  RosAdapterRobot * ros_adapter_robot = new RosAdapterRobot(true);
-  RosAdapterPid *   ros_adapter_pid_1   = new RosAdapterPid("/car/pid1");
-  RosAdapterPid *   ros_adapter_pid_2   = new RosAdapterPid("/car/pid2");
-  RosAdapterPid *   ros_adapter_pid_3   = new RosAdapterPid("/car/pid3");
-  RosAdapterPid *   ros_adapter_pid_4   = new RosAdapterPid("/car/pid4");
+  RosAdapterRobot * ros_adapter_robot = new RosAdapterRobot();
+
+  RosAdapterImu * ros_adapter_imu = new RosAdapterImu();
+
+  //RosAdapterPid *   ros_adapter_pid_1   = new RosAdapterPid("/wheel1/cmd_vel","/wheel1/cmd_pid","/wheel1/tel_vel");
+  //RosAdapterPid *   ros_adapter_pid_2   = new RosAdapterPid("/wheel2/cmd_vel","/wheel2/cmd_pid","/wheel2/tel_vel");
+  //RosAdapterPid *   ros_adapter_pid_3   = new RosAdapterPid("/wheel3/cmd_vel","/wheel3/cmd_pid","/wheel3/tel_vel");
+  //RosAdapterPid *   ros_adapter_pid_4   = new RosAdapterPid("/wheel4/cmd_vel","/wheel4/cmd_pid","/wheel4/tel_vel");
 
   ros_controller = new RosController();
   ros_controller->addNode(ros_adapter_robot);
-  ros_controller->addNode(ros_adapter_pid_1);
-  ros_controller->addNode(ros_adapter_pid_2);
-  ros_controller->addNode(ros_adapter_pid_3);
-  ros_controller->addNode(ros_adapter_pid_4);
+  ros_controller->addNode(ros_adapter_imu);
+  //ros_controller->addNode(ros_adapter_pid_1);
+  //ros_controller->addNode(ros_adapter_pid_2);
+  //ros_controller->addNode(ros_adapter_pid_3);
+  //ros_controller->addNode(ros_adapter_pid_4);
   ros_controller->init();
  
   RosConfigFourWheelRobotConfig * ros_config_robot = new RosConfigFourWheelRobotConfig("robotin");
   ros_controller->readConfiguration(ros_config_robot);
 
-  robot = 
-        new FourWheelRobot(ros_config_robot->robot_wheel_separation_x,
-                                      ros_config_robot->robot_wheel_separation_y,
-                                      ros_config_robot->robot_wheel_radious);
 
   RosConfigL298N * ros_config_motor = new RosConfigL298N("robotin");
   ros_controller->readConfiguration(ros_config_motor);
+
+  //TODO FROM CONFIG
+  robot = 
+    new FourWheelRobot(0.21,
+                          0.16,
+                          0.034);
 
   //Wheel Front Left------------------------------------------------------------------------
   controller1 = 
@@ -115,10 +118,10 @@ void setup() {
   pid1 = new Pid();
   wheel1 = new WheelEncoder();
 
-  pid1->setKp(0.2);
-  pid1->setKi(0.5);
+  //TODO FROM CONFIG
+  pid1->setKp(0.5);
+  pid1->setKi(3.1);
   pid1->setKd(0.0);
-  
   
   controller1->attachPower(ros_config_motor->wheel_config[0].pin_power);
   controller1->attachDirection(ros_config_motor->wheel_config[0].pin_direction_1,
@@ -126,8 +129,8 @@ void setup() {
   controller1->attachEncoder(encoder_1);
   wheel1->attachController(controller1);
   wheel1->attachPid(pid1);
-  robot->addWheel(wheel1); 
-  ros_adapter_pid_1->attachWheel(wheel1);
+  robot->addWheel(wheel1);
+  //ros_adapter_pid_1->attachWheel(wheel1);
 
   //Wheel Front Right------------------------------------------------------------------------
   controller2 = 
@@ -143,10 +146,9 @@ void setup() {
   pid2 = new Pid();
   wheel2 = new WheelEncoder();                
 
-  pid2->setKp(0.2);
-  pid2->setKi(0.5);
+  pid2->setKp(0.5);
+  pid2->setKi(3.1);
   pid2->setKd(0.0);
-  
    
   controller2->attachPower(ros_config_motor->wheel_config[1].pin_power);
   controller2->attachDirection(ros_config_motor->wheel_config[1].pin_direction_1,
@@ -155,7 +157,7 @@ void setup() {
   wheel2->attachController(controller2);
   wheel2->attachPid(pid2);
   robot->addWheel(wheel2);
-  ros_adapter_pid_2->attachWheel(wheel2); 
+  //ros_adapter_pid_2->attachWheel(wheel2); 
   
   //Wheel Back Left------------------------------------------------------------------------  
   controller3 = 
@@ -170,8 +172,8 @@ void setup() {
   pid3 = new Pid();
   wheel3 = new WheelEncoder();      
 
-  pid3->setKp(0.2);
-  pid3->setKi(0.5);
+  pid3->setKp(0.5);
+  pid3->setKi(3.1);
   pid3->setKd(0.0);
 
   controller3->attachPower(ros_config_motor->wheel_config[2].pin_power);
@@ -181,7 +183,7 @@ void setup() {
   wheel3->attachController(controller3);
   wheel3->attachPid(pid3);
   robot->addWheel(wheel3);
-  ros_adapter_pid_3->attachWheel(wheel3); 
+  //ros_adapter_pid_3->attachWheel(wheel3); 
 
   //Wheel Back Right------------------------------------------------------------------------
   controller4 = 
@@ -196,8 +198,8 @@ void setup() {
   pid4 = new Pid();
   wheel4 = new WheelEncoder();
    
-  pid4->setKp(0.2);
-  pid4->setKi(0.5);
+  pid4->setKp(0.5);
+  pid4->setKi(3.1);
   pid4->setKd(0.0);
  
   controller4->attachPower(ros_config_motor->wheel_config[3].pin_power);
@@ -207,11 +209,15 @@ void setup() {
   wheel4->attachController(controller4);
   wheel4->attachPid(pid4);
   robot->addWheel(wheel4);
-  ros_adapter_pid_4->attachWheel(wheel4); 
+  //ros_adapter_pid_4->attachWheel(wheel4); 
 
-  //Robot------------------------------------------------------------------------
+
+  //Imu------------------------------------------------------------------------
+  imu = new Imu();
+  ros_adapter_imu->attachImu(imu);
+
   ros_adapter_robot->attachRobot(robot);
-  
+
   createTask();
   initTask(); 
 }
@@ -222,31 +228,29 @@ void robot_ros_publish_callback()
     ros_controller->update();
 }
 
-void robot_kinematic_callback() 
-{
-  if (wheel1 !=0)
-    wheel1->update(KINEMATIC_TASK_MS/1000.0);
-  if (wheel2 !=0)
-    wheel2->update(KINEMATIC_TASK_MS/1000.0);
-  if (wheel3 !=0)
-    wheel3->update(KINEMATIC_TASK_MS/1000.0);
-  if (wheel4 !=0)
-    wheel4->update(KINEMATIC_TASK_MS/1000.0);
-
-  if (robot != 0) 
-    robot->update(KINEMATIC_TASK_MS/1000.0);
-}
-
 void robot_close_loop_callback()
 {
   if (controller1 != 0) 
-    controller1->update(CLOSE_LOOP_TASK_MS/1000.0);
+    controller1->update(CLOSE_LOOP_TASK_MS);
   if (controller2 != 0) 
-    controller2->update(CLOSE_LOOP_TASK_MS/1000.0);
+    controller2->update(CLOSE_LOOP_TASK_MS);
   if (controller3 != 0) 
-    controller3->update(CLOSE_LOOP_TASK_MS/1000.0);
+    controller3->update(CLOSE_LOOP_TASK_MS);
   if (controller4 != 0) 
-    controller4->update(CLOSE_LOOP_TASK_MS/1000.0);
+    controller4->update(CLOSE_LOOP_TASK_MS);
+
+  if (wheel1 != 0) 
+    wheel1->update(CLOSE_LOOP_TASK_MS);
+  if (wheel2 != 0) 
+    wheel2->update(CLOSE_LOOP_TASK_MS);
+  if (wheel3 != 0) 
+    wheel3->update(CLOSE_LOOP_TASK_MS);
+  if (wheel4 != 0) 
+    wheel4->update(CLOSE_LOOP_TASK_MS);
+
+  if (robot != 0) 
+    robot->update(CLOSE_LOOP_TASK_MS); 
+
 }
   
 void loop() {

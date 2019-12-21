@@ -98,7 +98,7 @@ void FourWheelRobot::update(double dt) //TODO REMOVE THIS PARAMETER
 
   vx_     = (  wheel_radious_ * ( velocity_1 + velocity_2 + velocity_3 + velocity_4 )  )   / 4.;  
 	vy_     = 0;
-  vtheta_ =  ( ( -velocity_1 + velocity_2 - velocity_3 + velocity_4 ) / 4.0 ) /  
+  vtheta_ =  ( wheel_radious_ * ( ( -velocity_1 + velocity_2 - velocity_3 + velocity_4 ) / 4.0 ) ) /  
               ( (wheel_separation_x_ / 2) + (wheel_separation_y_ / 2) )  ;
               
 	#ifdef FOUR_WHEEL_ROBOT_DEBUG
@@ -109,19 +109,5 @@ void FourWheelRobot::update(double dt) //TODO REMOVE THIS PARAMETER
   Serial.print(vtheta_);
   Serial.print("\n");
 	#endif
-  
-  theta_  += vtheta_ * dt;
-	x_      +=  vx_ * cos(theta_) * dtt;
-	y_      +=  vx_ * sin(theta_) * dtt;
-
-	#ifdef FOUR_WHEEL_ROBOT_DEBUG
-	Serial.print("FourWheelRobot::update:");
-  Serial.print(" x\t");
-  Serial.print(x_);
-  Serial.print(" y\t");
-  Serial.print(y_);
-  Serial.print(" theta\t");
-  Serial.print(theta_);
-  Serial.print("\n");
-	#endif
+    
 }

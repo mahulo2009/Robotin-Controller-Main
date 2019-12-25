@@ -95,15 +95,13 @@ void setup() {
   RosConfigFourWheelRobotConfig * ros_config_robot = new RosConfigFourWheelRobotConfig("robotin");
   ros_controller->readConfiguration(ros_config_robot);
 
-
   RosConfigL298N * ros_config_motor = new RosConfigL298N("robotin");
   ros_controller->readConfiguration(ros_config_motor);
 
-  //TODO FROM CONFIG
   robot = 
-    new FourWheelRobot(0.21,
-                          0.16,
-                          0.034);
+    new FourWheelRobot(ros_config_robot->robot_wheel_separation_x,
+                          ros_config_robot->robot_wheel_separation_y,
+                          ros_config_robot->robot_wheel_radious);
 
   //Wheel Front Left------------------------------------------------------------------------
   controller1 = 

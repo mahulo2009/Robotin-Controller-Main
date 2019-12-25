@@ -38,7 +38,7 @@ void FourWheelRobot::update(double dt) //TODO REMOVE THIS PARAMETER
     double target_velocity_wx = 
       target_velocity_x_ / ( wheel_radious_); //angular velocity rad/sec
     double target_velocity_wtheta = 
-      ( target_velocity_theta_ * (wheel_separation_x_ / 2.0 + wheel_separation_y_ / 2.0) ) / ( 2.0 * wheel_radious_ );
+      ( target_velocity_theta_ * (wheel_separation_x_ / 2.0 + wheel_separation_y_ / 2.0) ) / (  wheel_radious_ );
 
     velocity_1  = target_velocity_wx - target_velocity_wtheta;
     velocity_2  = target_velocity_wx + target_velocity_wtheta;

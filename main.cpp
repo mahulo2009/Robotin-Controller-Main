@@ -106,6 +106,7 @@ void setup() {
   //Wheel Front Left------------------------------------------------------------------------
   controller1 = 
     new L298NHardwareController(ros_config_motor->gain,
+                                ros_config_motor->offset,
                                 ros_config_motor->power_min,
                                 ros_config_motor->power_max,
                                 ros_config_motor->ticks_per_revolution,
@@ -133,6 +134,7 @@ void setup() {
   //Wheel Front Right------------------------------------------------------------------------
   controller2 = 
     new L298NHardwareController(ros_config_motor->gain,
+                                ros_config_motor->offset,
                                 ros_config_motor->power_min,
                                 ros_config_motor->power_max,
                                 ros_config_motor->ticks_per_revolution,
@@ -160,6 +162,7 @@ void setup() {
   //Wheel Back Left------------------------------------------------------------------------  
   controller3 = 
     new L298NHardwareController(ros_config_motor->gain,
+                                  ros_config_motor->offset,
                                   ros_config_motor->power_min,
                                   ros_config_motor->power_max,
                                   ros_config_motor->ticks_per_revolution,
@@ -186,6 +189,7 @@ void setup() {
   //Wheel Back Right------------------------------------------------------------------------
   controller4 = 
     new L298NHardwareController(ros_config_motor->gain,
+                                ros_config_motor->offset,
                                 ros_config_motor->power_min,
                                 ros_config_motor->power_max,
                                 ros_config_motor->ticks_per_revolution,

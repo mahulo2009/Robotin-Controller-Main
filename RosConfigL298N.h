@@ -20,6 +20,7 @@ class RosConfigL298N : public RosConfigBase {
         virtual void read(ros::NodeHandle &nh);
 
         float   gain;
+        float   offset;
         int     power_min;  
         int     power_max;
         int     ticks_per_revolution;   //TODO ENCODER NOTHING TO DO WITH L298N

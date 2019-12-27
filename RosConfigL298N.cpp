@@ -7,6 +7,7 @@ RosConfigL298N::RosConfigL298N(String ns):ns_(ns)
 void RosConfigL298N::read(ros::NodeHandle &nh)
 {
     nh.getParam(("/"+ns_+"/gain").c_str(), &this->gain);
+    nh.getParam(("/"+ns_+"/offset").c_str(), &this->offset);
     nh.getParam(("/"+ns_+"/power_min").c_str(), &this->power_min);
     nh.getParam(("/"+ns_+"/power_max").c_str(), &this->power_max);
     nh.getParam(("/"+ns_+"/ticks_per_revolution").c_str(), &this->ticks_per_revolution);
